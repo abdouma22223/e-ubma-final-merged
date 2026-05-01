@@ -7,3 +7,4 @@ cryptography
 python-multipart
 python-dotenv
 groq
+pg8000
