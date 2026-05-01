@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ink: #111111;
+    --ink-2: #444444;
+    --ink-3: #888888;
+    --gold: #C5A059;
+    --surface: #F8F8F8;
+    --surface-2: #F0F0F0;
+    --surface-3: #E0E0E0;
+    --success: #10B981;
+    --success-light: #ECFDF5;
+    --warning: #F59E0B;
+    --warning-light: #FFFBEB;
+    --info: #3B82F6;
+    --info-light: #EFF6FF;
+    --danger: #EF4444;
+    --danger-light: #FEF2F2;
+  }
+}
+
+body {
+  @apply bg-surface text-ink font-sans selection:bg-ink selection:text-white;
+}
+
+.font-display {
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hover-lift {
+  @apply transition-transform duration-300 hover:-translate-y-1;
+}
+
+.pulse-ring {
+  box-shadow: 0 0 0 0 rgba(17, 17, 17, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(17, 17, 17, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(17, 17, 17, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(17, 17, 17, 0); }
+}
