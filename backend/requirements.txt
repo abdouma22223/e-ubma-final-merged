@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+sqlalchemy
+argon2-cffi
+cryptography
+python-multipart
+python-dotenv
+groq
+pg8000
