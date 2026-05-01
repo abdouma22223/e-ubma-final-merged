@@ -44,9 +44,12 @@ const sectionLinks = [
   { id: "activity",  labelKey: "admin.nav.activity" },
 ];
 
+import { useNavigate } from "react-router-dom";
+
 function AdminTopNav() {
   const { toggleSidebar } = useSidebar();
   const { t, lang } = useLanguage();
+  const navigate = useNavigate();
   const resetLocal = () => { localStorage.clear(); window.location.reload(); };
 
   return (
@@ -73,13 +76,18 @@ function AdminTopNav() {
         <button onClick={resetLocal} className="text-[10px] font-black uppercase text-danger hover:underline">Reset System</button>
         <LanguageSwitcher />
         <SafetyGuard name="Notifications"><AdminRequestsBell /></SafetyGuard>
-        <div className="grid h-9 w-9 place-items-center rounded-full bg-surface-2 text-ink shadow-sm transition hover:scale-105 active:scale-95">
+        <button 
+          onClick={() => navigate("/profile", { state: { role: 'Administrator' } })}
+          className="grid h-9 w-9 place-items-center rounded-full bg-surface-2 text-ink shadow-sm transition hover:scale-105 active:scale-95"
+          aria-label="Admin Profile"
+        >
           <User className="h-5 w-5" />
-        </div>
+        </button>
       </div>
     </nav>
   );
 }
+
 
 export default function AdminSpace() {
   const { t, dir, lang } = useLanguage();
