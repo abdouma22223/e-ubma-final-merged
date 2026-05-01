@@ -5,11 +5,10 @@ import ubmaLogo from "@/assets/ubma-logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
-
 function LoginPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [studentId, setStudentId] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -18,51 +17,25 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const id = studentId.trim();
-    // Determine role by prefix (same convention as before)
-    const isAdmin = id.startsWith("00");
-    const isTeacher = id.startsWith("1900");
-    const role = isAdmin ? "admin" : isTeacher ? "professor" : "student";
-    const dest = isAdmin ? "/admin" : isTeacher ? "/teacher-space" : "/student-space";
-
     try {
-      // Real backend auth
       const { apiLogin } = await import("@/lib/api");
-      const result = await apiLogin(id, password);
+      const result = await apiLogin(email, password);
 
-      // Persist session
       localStorage.setItem("user_id", String(result.user_id));
       localStorage.setItem("user_name", result.first_name);
       localStorage.setItem("user_major", result.major);
       localStorage.setItem("user_role", result.role);
 
-      const finalDest = result.role === "admin" 
+      const dest = result.role === "admin" 
         ? "/admin" 
         : result.role === "professor" 
           ? "/teacher-space" 
           : "/student-space";
 
-      toast.success(
-        result.role === "admin"
-          ? "Welcome to admin space"
-          : result.role === "professor"
-            ? t("login.welcome_teacher" as any)
-            : t("login.welcome_student" as any),
-      );
-      navigate(finalDest);
+      toast.success(t("login.success" as any) || "Login successful");
+      navigate(dest);
     } catch (err: any) {
-      // Fallback: if backend is down, allow mock login for demo
-      const msg = err?.message || "Login failed";
-      if (msg.includes("fetch") || msg.includes("Failed")) {
-        // Backend unreachable — mock login for demo purposes
-        localStorage.setItem("user_id", id);
-        localStorage.setItem("user_name", id);
-        localStorage.setItem("user_role", role);
-        toast.warning("Backend offline — using demo mode");
-        setTimeout(() => navigate(dest), 500);
-      } else {
-        toast.error(msg);
-      }
+      toast.error(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -70,7 +43,6 @@ function LoginPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Ambient background */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
@@ -95,85 +67,40 @@ function LoginPage() {
           <LanguageSwitcher />
         </div>
         <div className="grid w-full gap-10 md:grid-cols-2 md:items-center">
-          {/* Brand panel */}
           <div className="hidden flex-col items-start gap-6 md:flex fade-up">
-            <img
-              src={ubmaLogo}
-              alt="UBMA logo"
-              className="h-20 w-20 rounded-full bg-white object-contain p-2 shadow-[0_18px_50px_-10px_color-mix(in_oklab,var(--ink)_35%,transparent)] float"
-            />
+            <img src={ubmaLogo} alt="UBMA logo" className="h-20 w-20 rounded-full bg-white object-contain p-2 shadow-xl float" />
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.4em] text-ink-3">
-                UBMA · GNU
-              </p>
-              <h1 className="font-display text-4xl font-bold leading-tight text-ink lg:text-5xl">
-                {t("login.brand_title" as any)}
-              </h1>
-              <p className="mt-4 max-w-md text-sm text-ink-3">
-                {t("login.brand_desc" as any)}
-              </p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.4em] text-ink-3">UBMA · GNU</p>
+              <h1 className="font-display text-4xl font-bold leading-tight text-ink lg:text-5xl">{t("login.brand_title" as any)}</h1>
+              <p className="mt-4 max-w-md text-sm text-ink-3">{t("login.brand_desc" as any)}</p>
             </div>
-            <ul className="space-y-2 text-sm text-ink-2">
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> {t("login.feature_pades" as any)}
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> {t("login.feature_ob" as any)}
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> {t("login.feature_vault" as any)}
-              </li>
-            </ul>
           </div>
 
-          {/* Form card */}
           <div className="fade-up delay-200">
-            <div className="rounded-3xl border border-surface-3 bg-white/85 p-7 shadow-[0_18px_60px_-18px_color-mix(in_oklab,var(--ink)_30%,transparent)] backdrop-blur-md md:p-9">
-              <div className="mb-6 flex items-center gap-3 md:hidden">
-                <img
-                  src={ubmaLogo}
-                  alt="UBMA logo"
-                  className="h-10 w-10 rounded-full bg-white object-contain p-1"
-                />
-                <span className="font-display text-lg font-bold text-ink">
-                  {t("login.brand_mobile" as any)}
-                </span>
-              </div>
-
+            <div className="rounded-3xl border border-surface-3 bg-white/85 p-7 shadow-2xl backdrop-blur-md md:p-9">
               <h2 className="font-display text-2xl font-bold text-ink">{t("login.title" as any)}</h2>
               <p className="mt-1 text-sm text-ink-3">{t("login.subtitle" as any)}</p>
 
               <form onSubmit={submit} className="mt-6 space-y-4">
                 <div>
-                  <label htmlFor="studentId" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-2">
-                    {t("login.id" as any)}
-                  </label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-2">{t("login.email" as any)}</label>
                   <input
-                    id="studentId"
-                    type="text"
-                    autoComplete="username"
+                    type="email"
                     required
-                    value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
-                    placeholder="e.g. 202312345678"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
                     className="w-full rounded-xl border-[1.5px] border-surface-3 bg-surface-2 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-ink focus:bg-white"
                   />
                 </div>
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-ink-2">
-                      {t("login.password" as any)}
-                    </label>
-                    <button type="button" className="text-xs font-medium text-ink-3 hover:text-ink">
-                      {t("login.forgot" as any)}
-                    </button>
+                    <label className="text-xs font-semibold uppercase tracking-wide text-ink-2">{t("login.password" as any)}</label>
                   </div>
                   <div className="relative">
                     <input
-                      id="password"
                       type={show ? "text" : "password"}
-                      autoComplete="current-password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -190,35 +117,15 @@ function LoginPage() {
                   </div>
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-2">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-surface-3 accent-[var(--ink)]"
-                  />
-                  {t("login.remember" as any)}
-                </label>
-
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_color-mix(in_oklab,var(--ink)_55%,transparent)] transition hover:opacity-95 disabled:opacity-70"
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-6 py-3 text-sm font-semibold text-white shadow-xl transition hover:opacity-95 disabled:opacity-70"
                 >
-                  {loading ? (
-                    <span className="dot-anim flex gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                    </span>
-                  ) : (
-                    <>
-                      {t("login.submit" as any)}
-                      <span aria-hidden className="inline-block transition-transform group-hover:translate-x-1">→</span>
-                    </>
-                  )}
+                  {loading ? "..." : t("login.submit" as any)}
                 </button>
               </form>
             </div>
-
             <div className="mt-4 text-center text-xs">
               <Link to="/" className="text-ink-3 hover:text-ink">{t("common.back_home" as any)}</Link>
             </div>
