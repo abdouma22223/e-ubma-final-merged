@@ -22,10 +22,15 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Enable CORS
+# Enable CORS for both local and production (Vercel)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://localhost:8081", "http://localhost:5173", "http://localhost:5174"],
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://localhost:5174",
+        "https://e-ubma-final-merged.vercel.app", # رابط مشروعك على فيرسال
+        "*" # للسماح بأي رابط في البداية لتسهيل الاختبار
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -156,7 +161,7 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 
 @app.post("/api/documents/upload")
 async def upload_document(user_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    \"\"\"Uploads a file, encrypts it with AES-256 in memory, generates Hash & QR, and saves it.\"\"\"
+    """Uploads a file, encrypts it with AES-256 in memory, generates Hash & QR, and saves it."""
     file_data = await file.read()
     
     # Generate Hash for Authenticity
@@ -171,48 +176,48 @@ async def upload_document(user_id: str, file: UploadFile = File(...), db: Sessio
     # Ensure dir exists
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     # We use new_id instead of file_hash for local storage since file_hash doesn't exist in DB
-    file_path = os.path.join(UPLOAD_DIR, f\"{new_id}.enc\")
+    file_path = os.path.join(UPLOAD_DIR, f"{new_id}.enc")
     
     # Save encrypted data
-    with open(file_path, \"wb\") as f:
+    with open(file_path, "wb") as f:
         f.write(encrypted_data)
         
     new_doc = models.Document(
         id=new_id,
         filename=file.filename,
         storage_path=file_path,
-        mimetype=file.content_type or \"application/octet-stream\",
+        mimetype=file.content_type or "application/octet-stream",
         is_encrypted=True,
         owner_id=user_id,
-        status=\"pending\"
+        status="pending"
     )
     db.add(new_doc)
     db.commit()
     db.refresh(new_doc)
     
     # Get dynamic base URL from request or environment
-    base_url = os.environ.get(\"VERCEL_URL\", \"localhost:5173\")
-    if not base_url.startswith(\"http\"):
-        base_url = f\"https://{base_url}\"
+    base_url = os.environ.get("VERCEL_URL", "localhost:5173")
+    if not base_url.startswith("http"):
+        base_url = f"https://{base_url}"
     
-    qr_url = f\"{base_url}/verify/{new_id}\"
+    qr_url = f"{base_url}/verify/{new_id}"
     
     return {
-        \"message\": \"File encrypted and uploaded securely\",
-        \"document_id\": new_doc.id,
-        \"qr_verification_url\": qr_url
+        "message": "File encrypted and uploaded securely",
+        "document_id": new_doc.id,
+        "qr_verification_url": qr_url
     }
 
-@app.get(\"/api/documents/download/{doc_id}\")
+@app.get("/api/documents/download/{doc_id}")
 def download_document(doc_id: str, user_id: str, db: Session = Depends(get_db)):
     doc = db.query(models.Document).filter(models.Document.id == doc_id).first()
     if not doc:
-        raise HTTPException(status_code=404, detail=\"Document not found\")
+        raise HTTPException(status_code=404, detail="Document not found")
     
     if not os.path.exists(doc.storage_path):
-        raise HTTPException(status_code=404, detail=\"File missing on server\")
+        raise HTTPException(status_code=404, detail="File missing on server")
         
-    with open(doc.storage_path, \"rb\") as f:
+    with open(doc.storage_path, "rb") as f:
         encrypted_data = f.read()
         
     try:
@@ -220,145 +225,145 @@ def download_document(doc_id: str, user_id: str, db: Session = Depends(get_db)):
         from fastapi.responses import Response
         return Response(
             content=decrypted_data,
-            media_type=\"application/pdf\",
-            headers={\"Content-Disposition\": f\"attachment; filename={doc.filename}\"}
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={doc.filename}"}
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f\"Decryption failed: {str(e)}\")
+        raise HTTPException(status_code=500, detail=f"Decryption failed: {str(e)}")
 
-@app.get(\"/api/documents\")
+@app.get("/api/documents")
 def get_user_documents(user_id: str, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail=\"User not found\")
+        raise HTTPException(status_code=404, detail="User not found")
         
-    if user.role in [\"admin\", \"professor\"]:
+    if user.role in ["admin", "professor"]:
         docs = db.query(models.Document).all()
     else:
         docs = db.query(models.Document).filter(models.Document.owner_id == user_id).all()
         
-    return [{\"id\": str(d.id), \"filename\": d.filename, \"hash\": str(d.id), \"status\": d.status} for d in docs]
+    return [{"id": str(d.id), "filename": d.filename, "hash": str(d.id), "status": d.status} for d in docs]
 
 class StatusUpdate(BaseModel):
     status: str
 
-@app.post(\"/api/documents/{doc_id}/status\")
+@app.post("/api/documents/{doc_id}/status")
 def update_document_status(doc_id: str, payload: StatusUpdate, user_id: str, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user or user.role not in [\"admin\", \"professor\"]:
-        raise HTTPException(status_code=403, detail=\"Not authorized to validate documents\")
+    if not user or user.role not in ["admin", "professor"]:
+        raise HTTPException(status_code=403, detail="Not authorized to validate documents")
         
     doc = db.query(models.Document).filter(models.Document.id == doc_id).first()
     if not doc:
-        raise HTTPException(status_code=404, detail=\"Document not found\")
+        raise HTTPException(status_code=404, detail="Document not found")
         
     doc.status = payload.status
     db.commit()
-    return {\"message\": f\"Document status updated to {payload.status}\"}
+    return {"message": f"Document status updated to {payload.status}"}
 
-@app.get(\"/api/documents/share/{doc_id}\")
+@app.get("/api/documents/share/{doc_id}")
 def generate_share_link(doc_id: str, expires_in: int = 24, db: Session = Depends(get_db)):
-    \"\"\"Generate a temporary JWT link to share the document.\"\"\"
+    """Generate a temporary JWT link to share the document."""
     doc = db.query(models.Document).filter(models.Document.id == doc_id).first()
     if not doc:
-        raise HTTPException(status_code=404, detail=\"Document not found\")
+        raise HTTPException(status_code=404, detail="Document not found")
     
     token = sharing.create_temporary_link(doc_id, expires_delta_hours=expires_in)
     # Return a frontend URL (same as base URL but without /api)
-    base_url = os.environ.get(\"VERCEL_URL\", \"localhost:5173\")
-    if not base_url.startswith(\"http\"):
-        base_url = f\"https://{base_url}\"
+    base_url = os.environ.get("VERCEL_URL", "localhost:5173")
+    if not base_url.startswith("http"):
+        base_url = f"https://{base_url}"
     
-    return {\"temporary_link\": f\"{base_url}/shared?token={token}\"}
+    return {"temporary_link": f"{base_url}/shared?token={token}"}
 
-@app.post(\"/api/crypto/encrypt\")
+@app.post("/api/crypto/encrypt")
 async def encrypt_file_endpoint(file: UploadFile = File(...)):
-    \"\"\"Stateless encryption for frontend to call before uploading to Supabase.\"\"\"
+    """Stateless encryption for frontend to call before uploading to Supabase."""
     file_data = await file.read()
     try:
         encrypted_data = crypto.encrypt_file(file_data)
         from fastapi.responses import Response
-        return Response(content=encrypted_data, media_type=\"application/octet-stream\")
+        return Response(content=encrypted_data, media_type="application/octet-stream")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post(\"/api/crypto/decrypt\")
+@app.post("/api/crypto/decrypt")
 async def decrypt_file_endpoint(file: UploadFile = File(...)):
-    \"\"\"Stateless decryption for frontend to call after downloading from Supabase.\"\"\"
+    """Stateless decryption for frontend to call after downloading from Supabase."""
     encrypted_data = await file.read()
     try:
         decrypted_data = crypto.decrypt_file(encrypted_data)
         from fastapi.responses import Response
-        return Response(content=decrypted_data, media_type=\"application/octet-stream\")
+        return Response(content=decrypted_data, media_type="application/octet-stream")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get(\"/api/documents/verify/{doc_id}\")
+@app.get("/api/documents/verify/{doc_id}")
 def verify_document_authenticity(doc_id: str, db: Session = Depends(get_db)):
     doc = db.query(models.Document).filter(models.Document.id == doc_id).first()
     if not doc:
-        return {\"status\": \"Fake\", \"message\": \"This document does NOT exist in the university vault.\"}
+        return {"status": "Fake", "message": "This document does NOT exist in the university vault."}
     
     owner = db.query(models.User).filter(models.User.id == doc.owner_id).first()
     return {
-        \"status\": \"Authentic\",
-        \"message\": \"This is a verified E-UBMA document.\",
-        \"filename\": doc.filename,
-        \"owner\": f\"{owner.first_name} {owner.last_name}\",
-        \"major\": owner.major
+        "status": "Authentic",
+        "message": "This is a verified E-UBMA document.",
+        "filename": doc.filename,
+        "owner": f"{owner.first_name} {owner.last_name}",
+        "major": owner.major
     }
 
-@app.post(\"/api/chat\")
+@app.post("/api/chat")
 async def chat_with_assistant(req: ChatRequest):
-    \"\"\"Main Chatbot Endpoint using Groq API\"\"\"
+    """Main Chatbot Endpoint using Groq API"""
     result = await process_chat_with_groq(req.message, req.user_id, req.context)
-    intent_data = result.get(\"intent_data\")
+    intent_data = result.get("intent_data")
     
     if intent_data:
-        intent = intent_data.get(\"intent\")
-        ui_language = req.context.get(\"ui_language\", \"fr\") if req.context else \"fr\"
+        intent = intent_data.get("intent")
+        ui_language = req.context.get("ui_language", "fr") if req.context else "fr"
             
-        if intent == \"request_document\":
+        if intent == "request_document":
             pass # Silent execution
-        elif intent == \"fill_form\":
+        elif intent == "fill_form":
             pass # Silent execution
-        elif intent == \"validate_badge\":
+        elif intent == "validate_badge":
             pass # Silent execution
             
     return {
-        \"reply\": result[\"reply\"],
-        \"intent_detected\": intent_data
+        "reply": result["reply"],
+        "intent_detected": intent_data
     }
 
 # --- Requests Endpoints ---
 
-@app.get(\"/api/requests\")
-def get_requests(user_id: str | None = None, role: str = \"student\", db: Session = Depends(get_db)):
-    if role == \"admin\":
+@app.get("/api/requests")
+def get_requests(user_id: str | None = None, role: str = "student", db: Session = Depends(get_db)):
+    if role == "admin":
         return db.query(models.Request).all()
-    if role == \"professor\":
+    if role == "professor":
         return db.query(models.Request).filter(models.Request.assigned_to == user_id).all()
     return db.query(models.Request).filter(models.Request.student_id == user_id).all()
 
-@app.post(\"/api/requests\")
+@app.post("/api/requests")
 def create_request(req: RequestCreate, db: Session = Depends(get_db)):
     new_req = models.Request(
         title=req.title,
         description=req.description,
         request_type=req.request_type,
         student_id=req.student_id,
-        status=\"pending\"
+        status="pending"
     )
     db.add(new_req)
     db.commit()
     db.refresh(new_req)
     return new_req
 
-@app.patch(\"/api/requests/{req_id}\")
+@app.patch("/api/requests/{req_id}")
 def update_request(req_id: str, update: RequestUpdate, db: Session = Depends(get_db)):
     req = db.query(models.Request).filter(models.Request.id == req_id).first()
     if not req:
-        raise HTTPException(status_code=404, detail=\"Request not found\")
+        raise HTTPException(status_code=404, detail="Request not found")
     if update.status:
         req.status = update.status
     if update.assigned_to:
@@ -368,13 +373,13 @@ def update_request(req_id: str, update: RequestUpdate, db: Session = Depends(get
 
 # --- Courses & Grades Endpoints ---
 
-@app.get(\"/api/courses\")
+@app.get("/api/courses")
 def get_courses(professor_id: str | None = None, db: Session = Depends(get_db)):
     if professor_id:
         return db.query(models.Course).filter(models.Course.professor_id == professor_id).all()
     return db.query(models.Course).all()
 
-@app.post(\"/api/courses\")
+@app.post("/api/courses")
 def create_course(course: CourseCreate, db: Session = Depends(get_db)):
     new_course = models.Course(**course.dict())
     db.add(new_course)
@@ -382,13 +387,13 @@ def create_course(course: CourseCreate, db: Session = Depends(get_db)):
     db.refresh(new_course)
     return new_course
 
-@app.get(\"/api/grades\")
+@app.get("/api/grades")
 def get_grades(student_id: str | None = None, db: Session = Depends(get_db)):
     if student_id:
         return db.query(models.Grade).filter(models.Grade.student_id == student_id).all()
     return db.query(models.Grade).all()
 
-@app.post(\"/api/grades\")
+@app.post("/api/grades")
 def create_grade(grade: GradeCreate, db: Session = Depends(get_db)):
     new_grade = models.Grade(**grade.dict())
     db.add(new_grade)
@@ -396,15 +401,15 @@ def create_grade(grade: GradeCreate, db: Session = Depends(get_db)):
     db.refresh(new_grade)
     return new_grade
 
-@app.get(\"/api/admin/users\")
+@app.get("/api/admin/users")
 def get_all_users(db: Session = Depends(get_db)):
     return db.query(models.User).all()
 
-@app.get(\"/api/admin/faculties\")
+@app.get("/api/admin/faculties")
 def get_faculties(db: Session = Depends(get_db)):
     return db.query(models.Faculty).all()
 
-@app.post(\"/api/admin/faculties\")
+@app.post("/api/admin/faculties")
 def create_faculty(faculty: FacultyCreate, db: Session = Depends(get_db)):
     new_faculty = models.Faculty(**faculty.dict())
     db.add(new_faculty)
@@ -412,10 +417,12 @@ def create_faculty(faculty: FacultyCreate, db: Session = Depends(get_db)):
     db.refresh(new_faculty)
     return new_faculty
 
-@app.get(\"/api/admin/activity-logs\")
+@app.get("/api/admin/activity-logs")
 def get_activity_logs(db: Session = Depends(get_db)):
     return db.query(models.ActivityLog).order_by(models.ActivityLog.timestamp.desc()).limit(50).all()
 
-if __name__ == \"__main__\":
+if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=\"0.0.0.0\", port=8001)
+    # Render sets the PORT environment variable automatically
+    port = int(os.environ.get("PORT", 8001))
+    uvicorn.run(app, host="0.0.0.0", port=port)
