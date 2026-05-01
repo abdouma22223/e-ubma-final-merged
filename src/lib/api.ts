@@ -21,12 +21,17 @@ export async function apiLogin(email: string, password: string) {
   return res.json();
 }
 
+export async function apiRegister(data: any) {
+  const res = await apiFetch("/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
 // ─── Chat (Groq AI) ────────────────────────────────────
-export async function apiChat(
-  message: string,
-  userId: string = "anonymous",
-  context?: Record<string, unknown>,
-) {
+export async function apiChat(message: string, userId: string = "anonymous", context?: any) {
   const res = await apiFetch("/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -40,6 +45,15 @@ export async function apiChat(
 export async function apiGetDocuments(userId: string) {
   const res = await apiFetch(`/documents?user_id=${userId}`);
   if (!res.ok) throw new Error("Failed to fetch documents");
+  return res.json();
+}
+
+export async function apiUpdateDocumentStatus(docId: string, status: string, userId: string) {
+  const res = await apiFetch(`/documents/${docId}/status?user_id=${userId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
   return res.json();
 }
 
@@ -75,6 +89,80 @@ export async function apiVerifyDocument(fileHash: string) {
 // ─── Requests ───────────────────────────────────────────
 export async function apiGetRequests(userId: string, role: string) {
   const res = await apiFetch(`/requests?user_id=${userId}&role=${role}`);
-  if (!res.ok) throw new Error("Failed to fetch requests");
+  if (!ok) throw new Error("Failed to fetch requests");
+  return res.json();
+}
+
+export async function apiCreateRequest(data: any) {
+  const res = await apiFetch("/requests", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function apiUpdateRequest(reqId: string, data: any) {
+  const res = await apiFetch(`/requests/${reqId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+// ─── Courses & Grades ────────────────────────────────────
+export async function apiGetCourses(professorId?: string) {
+  const endpoint = professorId ? `/courses?professor_id=${professorId}` : "/courses";
+  const res = await apiFetch(endpoint);
+  return res.json();
+}
+
+export async function apiCreateCourse(data: any) {
+  const res = await apiFetch("/courses", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function apiGetGrades(studentId?: string) {
+  const endpoint = studentId ? `/grades?student_id=${studentId}` : "/grades";
+  const res = await apiFetch(endpoint);
+  return res.json();
+}
+
+export async function apiCreateGrade(data: any) {
+  const res = await apiFetch("/grades", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+// ─── Admin ───────────────────────────────────────────────
+export async function apiAdminGetUsers() {
+  const res = await apiFetch("/admin/users");
+  return res.json();
+}
+
+export async function apiAdminGetFaculties() {
+  const res = await apiFetch("/admin/faculties");
+  return res.json();
+}
+
+export async function apiAdminCreateFaculty(data: any) {
+  const res = await apiFetch("/admin/faculties", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function apiAdminGetActivityLogs() {
+  const res = await apiFetch("/admin/activity-logs");
   return res.json();
 }
