@@ -6,15 +6,15 @@ from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
-from backend.vault.notifications import NotificationManager
-from backend.vault.qr_service import generate_qr_verification_url
-from backend.badges.linkedin import generate_linkedin_add_url
-from backend.chatbot.groq_service import process_chat_with_groq
+from vault.notifications import NotificationManager
+from vault.qr_service import generate_qr_verification_url
+from badges.linkedin import generate_linkedin_add_url
+from chatbot.groq_service import process_chat_with_groq
 
 # Database & Security
-from backend.database import SessionLocal, engine
-from backend import models
-from backend.vault import crypto, sharing
+from database import SessionLocal, engine
+import models
+from vault import crypto, sharing
 
 app = FastAPI(
     title="E-UBMA Portal API",
