@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from datetime import datetime, timezone
 
 from vault.notifications import NotificationManager
 from vault.qr_service import generate_qr_verification_url
@@ -113,7 +114,23 @@ class FacultyCreate(BaseModel):
     dean: str
     departments_count: int
 
-# --- Endpoints ---
+# --- Health & Status Endpoints ---
+
+@app.get("/")
+def read_root():
+    return {
+        "message": "Welcome to E-UBMA Portal API",
+        "status": "online",
+        "docs": "/docs"
+    }
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc),
+        "version": "2.0.1"
+    }
 
 @app.get("/api/test")
 def test_api():
