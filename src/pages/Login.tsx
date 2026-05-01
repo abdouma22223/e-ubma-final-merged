@@ -1,13 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
-import { UBMA_LOGO as ubmaLogo } from "@/assets/images";
+import ubmaLogo from "@/assets/ubma-logo.png";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
-
-import { supabase } from "../supabaseClient";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -16,35 +17,62 @@ function LoginPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-        console.log("Attempting login for:", studentId);
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', studentId)
-            .eq('password', password)
-            .single();
 
-        if (error || !data) {
-            toast.error("Invalid credentials or user not found");
-        } else {
-            localStorage.setItem("user_id", data.id);
-            localStorage.setItem("user_name", data.first_name);
-            localStorage.setItem("user_major", data.major);
-            localStorage.setItem("user_role", data.role || 'student');
-            
-            toast.success(`Welcome back ${data.first_name} (${data.role})`);
-            
-            // Redirect based on role
-            if (data.role === 'admin') navigate("/admin-dashboard");
-            else if (data.role === 'professor') navigate("/professor-dashboard");
-            else navigate("/student-space");
-        }
-    } catch (err) {
-        console.error("Unexpected Error:", err);
-        toast.error("Connection error with Supabase");
+    const id = studentId.trim();
+    // Determine role by prefix (same convention as before)
+    const isAdmin = id.startsWith("00");
+    const isTeacher = id.startsWith("1900");
+    const role = isAdmin ? "admin" : isTeacher ? "professor" : "student";
+    const dest = isAdmin ? "/admin" : isTeacher ? "/teacher-space" : "/student-space";
+
+    try {
+      // Real backend auth
+      const { apiLogin } = await import("@/lib/api");
+      const result = await apiLogin(id, password);
+
+      // Persist session
+      localStorage.setItem("user_id", String(result.user_id));
+      localStorage.setItem("user_name", result.first_name);
+      localStorage.setItem("user_major", result.major);
+      localStorage.setItem("user_role", result.role);
+
+      const finalDest = result.role === "admin" 
+        ? "/admin" 
+        : result.role === "professor" 
+          ? "/teacher-space" 
+          : "/student-space";
+
+      toast.success(
+        result.role === "admin"
+          ? "Welcome to admin space"
+          : result.role === "professor"
+            ? t("login.welcome_teacher" as any)
+            : t("login.welcome_student" as any),
+      );
+      navigate(finalDest);
+    } catch (err: any) {
+      const msg = err?.message || "Login failed";
+      // If backend is unreachable (network error), allow local demo login
+      if (msg.includes("fetch") || msg.includes("Failed") || msg.includes("NetworkError") || msg.includes("Load failed")) {
+        // Save full session with correct role
+        localStorage.setItem("user_id", id);
+        localStorage.setItem("user_name", id.startsWith("00") ? "Admin" : id.startsWith("1900") ? "Professeur" : "Étudiant");
+        localStorage.setItem("user_role", role);
+        localStorage.setItem("user_major", "Informatique");
+        toast.warning(
+          role === "admin"
+            ? "⚠️ Backend hors ligne — Accès admin en mode démo"
+            : role === "professor"
+            ? "⚠️ Backend hors ligne — Accès enseignant en mode démo"
+            : "⚠️ Backend hors ligne — Mode démo activé"
+        );
+        // Navigate to correct space based on role — NEVER to /offline
+        setTimeout(() => navigate(dest), 600);
+      } else {
+        toast.error(msg);
+      }
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -71,6 +99,9 @@ function LoginPage() {
       />
 
       <main className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6 py-12">
+        <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
+          <LanguageSwitcher />
+        </div>
         <div className="grid w-full gap-10 md:grid-cols-2 md:items-center">
           {/* Brand panel */}
           <div className="hidden flex-col items-start gap-6 md:flex fade-up">
@@ -84,25 +115,21 @@ function LoginPage() {
                 UBMA · GNU
               </p>
               <h1 className="font-display text-4xl font-bold leading-tight text-ink lg:text-5xl">
-                Log in to your university space
+                {t("login.brand_title" as any)}
               </h1>
               <p className="mt-4 max-w-md text-sm text-ink-3">
-                Access your documents, Open Badges, and Digital Vault — securely
-                signed and verifiable anywhere.
+                {t("login.brand_desc" as any)}
               </p>
             </div>
             <ul className="space-y-2 text-sm text-ink-2">
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> PAdES-LTV
-                signed documents
+                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> {t("login.feature_pades" as any)}
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> OpenBadges
-                3.0 credentials
+                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> {t("login.feature_ob" as any)}
               </li>
               <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> QR-verifiable
-                vault
+                <span className="h-1.5 w-1.5 rounded-full bg-ink" /> {t("login.feature_vault" as any)}
               </li>
             </ul>
           </div>
@@ -117,19 +144,17 @@ function LoginPage() {
                   className="h-10 w-10 rounded-full bg-white object-contain p-1"
                 />
                 <span className="font-display text-lg font-bold text-ink">
-                  UBMA Student Space
+                  {t("login.brand_mobile" as any)}
                 </span>
               </div>
 
-              <h2 className="font-display text-2xl font-bold text-ink">Welcome back</h2>
-              <p className="mt-1 text-sm text-ink-3">
-                Enter your credentials to continue.
-              </p>
+              <h2 className="font-display text-2xl font-bold text-ink">{t("login.title" as any)}</h2>
+              <p className="mt-1 text-sm text-ink-3">{t("login.subtitle" as any)}</p>
 
               <form onSubmit={submit} className="mt-6 space-y-4">
                 <div>
                   <label htmlFor="studentId" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-2">
-                    Enter your ID
+                    {t("login.id" as any)}
                   </label>
                   <input
                     id="studentId"
@@ -146,10 +171,10 @@ function LoginPage() {
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
                     <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-ink-2">
-                      Password
+                      {t("login.password" as any)}
                     </label>
                     <button type="button" className="text-xs font-medium text-ink-3 hover:text-ink">
-                      Forgot?
+                      {t("login.forgot" as any)}
                     </button>
                   </div>
                   <div className="relative">
@@ -168,7 +193,7 @@ function LoginPage() {
                       onClick={() => setShow((s) => !s)}
                       className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-semibold text-ink-3 hover:text-ink"
                     >
-                      {show ? "Hide" : "Show"}
+                      {show ? t("login.hide" as any) : t("login.show" as any)}
                     </button>
                   </div>
                 </div>
@@ -178,7 +203,7 @@ function LoginPage() {
                     type="checkbox"
                     className="h-4 w-4 rounded border-surface-3 accent-[var(--ink)]"
                   />
-                  Remember me on this device
+                  {t("login.remember" as any)}
                 </label>
 
                 <button
@@ -194,23 +219,16 @@ function LoginPage() {
                     </span>
                   ) : (
                     <>
-                      Log in
+                      {t("login.submit" as any)}
                       <span aria-hidden className="inline-block transition-transform group-hover:translate-x-1">→</span>
                     </>
                   )}
                 </button>
               </form>
-
-              <p className="mt-6 text-center text-xs text-ink-3">
-                Don't have an account?{" "}
-                <button type="button" className="font-semibold text-ink hover:underline">
-                  Contact the registrar
-                </button>
-              </p>
             </div>
 
             <div className="mt-4 text-center text-xs">
-              <Link to="/" className="text-ink-3 hover:text-ink">← Back to home</Link>
+              <Link to="/" className="text-ink-3 hover:text-ink">{t("common.back_home" as any)}</Link>
             </div>
           </div>
         </div>
