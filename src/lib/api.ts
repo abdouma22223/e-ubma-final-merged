@@ -1,8 +1,4 @@
-/**
- * API Service Layer — connects to the local FastAPI backend.
- */
-
-const BASE = "http://localhost:8001/api";
+const BASE = "/api";
 
 async function apiFetch(endpoint: string, options: RequestInit = {}) {
   return fetch(`${BASE}${endpoint}`, options);
@@ -14,21 +10,11 @@ export async function apiLogin(email: string, password: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: "Login failed" }));
-    throw new Error(err.detail || "Login failed");
-  }
+  if (!res.ok) throw new Error("Identifiants invalides");
   return res.json();
 }
 
-export async function apiChat(message: string, userId: string = "anonymous") {
-  const res = await apiFetch("/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, user_id: userId }),
-  });
-  if (!res.ok) throw new Error("Chat failed");
+export async function apiGetDocuments(userId: string) {
+  const res = await apiFetch(`/documents?user_id=${userId}`);
   return res.json();
 }
-
-// ... other original functions if needed

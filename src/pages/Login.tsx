@@ -32,7 +32,7 @@ function LoginPage() {
           ? "/teacher-space" 
           : "/student-space";
 
-      toast.success(t("login.success" as any) || "Login successful");
+      toast.success("Welcome back!");
       navigate(dest);
     } catch (err: any) {
       toast.error(err.message || "Login failed");
@@ -49,85 +49,56 @@ function LoginPage() {
         style={{
           background:
             "radial-gradient(60% 50% at 15% 10%, color-mix(in oklab, var(--ink) 14%, transparent), transparent 60%), radial-gradient(50% 40% at 85% 90%, color-mix(in oklab, var(--gold) 22%, transparent), transparent 60%)",
-          backgroundSize: "200% 200%",
-          animation: "gradientShift 18s ease-in-out infinite",
         }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06]"
-        style={{
-          backgroundImage: "radial-gradient(var(--ink) 1px, transparent 1px)",
-          backgroundSize: "22px 22px",
-        }}
-      />
-
       <main className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6 py-12">
         <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
           <LanguageSwitcher />
         </div>
         <div className="grid w-full gap-10 md:grid-cols-2 md:items-center">
-          <div className="hidden flex-col items-start gap-6 md:flex fade-up">
-            <img src={ubmaLogo} alt="UBMA logo" className="h-20 w-20 rounded-full bg-white object-contain p-2 shadow-xl float" />
+          <div className="hidden flex-col items-start gap-6 md:flex">
+            <img src={ubmaLogo} alt="UBMA logo" className="h-20 w-20 rounded-full bg-white object-contain p-2 shadow-xl" />
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.4em] text-ink-3">UBMA · GNU</p>
               <h1 className="font-display text-4xl font-bold leading-tight text-ink lg:text-5xl">{t("login.brand_title" as any)}</h1>
               <p className="mt-4 max-w-md text-sm text-ink-3">{t("login.brand_desc" as any)}</p>
             </div>
           </div>
-
           <div className="fade-up delay-200">
             <div className="rounded-3xl border border-surface-3 bg-white/85 p-7 shadow-2xl backdrop-blur-md md:p-9">
-              <h2 className="font-display text-2xl font-bold text-ink">{t("login.title" as any)}</h2>
-              <p className="mt-1 text-sm text-ink-3">{t("login.subtitle" as any)}</p>
-
+              <h2 className="font-display text-2xl font-bold text-ink">Connexion</h2>
+              <p className="mt-1 text-sm text-ink-3">Entrez vos identifiants pour accéder à votre espace</p>
               <form onSubmit={submit} className="mt-6 space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-2">{t("login.email" as any)}</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-2">Email</label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="w-full rounded-xl border-[1.5px] border-surface-3 bg-surface-2 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-ink focus:bg-white"
+                    className="w-full rounded-xl border-[1.5px] border-surface-3 bg-surface-2 px-4 py-3 text-sm text-ink outline-none"
                   />
                 </div>
-
                 <div>
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <label className="text-xs font-semibold uppercase tracking-wide text-ink-2">{t("login.password" as any)}</label>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={show ? "text" : "password"}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full rounded-xl border-[1.5px] border-surface-3 bg-surface-2 px-4 py-3 pr-20 text-sm text-ink outline-none transition-colors focus:border-ink focus:bg-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShow((s) => !s)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-semibold text-ink-3 hover:text-ink"
-                    >
-                      {show ? t("login.hide" as any) : t("login.show" as any)}
-                    </button>
-                  </div>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-2">Mot de passe</label>
+                  <input
+                    type={show ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border-[1.5px] border-surface-3 bg-surface-2 px-4 py-3 pr-20 text-sm text-ink outline-none"
+                  />
                 </div>
-
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-6 py-3 text-sm font-semibold text-white shadow-xl transition hover:opacity-95 disabled:opacity-70"
+                  className="w-full rounded-xl bg-ink px-6 py-3 text-sm font-semibold text-white shadow-xl"
                 >
-                  {loading ? "..." : t("login.submit" as any)}
+                  {loading ? "Connexion..." : "Se connecter"}
                 </button>
               </form>
-            </div>
-            <div className="mt-4 text-center text-xs">
-              <Link to="/" className="text-ink-3 hover:text-ink">{t("common.back_home" as any)}</Link>
             </div>
           </div>
         </div>
