@@ -3,10 +3,7 @@
  * In dev, Vite proxies /api/* → http://localhost:8001
  */
 
-// In production (Vercel), we point to the Render backend URL.
-// Replace 'your-backend-url.onrender.com' with your actual Render URL later.
-const BASE = import.meta.env.VITE_API_URL || "https://e-ubma-backend.onrender.com/api";
-
+const BASE = import.meta.env.VITE_API_URL || "http://localhost:8001/api";
 
 async function apiFetch(endpoint: string, options: RequestInit = {}) {
   return fetch(`${BASE}${endpoint}`, options);
