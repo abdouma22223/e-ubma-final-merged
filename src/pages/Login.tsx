@@ -19,27 +19,24 @@ function LoginPage() {
     setLoading(true);
 
     const id = studentId.trim();
-    // Determine role by prefix (same convention as before)
     const isAdmin = id.startsWith("00");
     const isTeacher = id.startsWith("1900");
     const role = isAdmin ? "admin" : isTeacher ? "professor" : "student";
     const dest = isAdmin ? "/admin" : isTeacher ? "/teacher-space" : "/student-space";
 
     try {
-      // Real backend auth
       const { apiLogin } = await import("@/lib/api");
       const result = await apiLogin(id, password);
 
-      // Persist session
       localStorage.setItem("user_id", String(result.user_id));
       localStorage.setItem("user_name", result.first_name);
       localStorage.setItem("user_major", result.major);
       localStorage.setItem("user_role", result.role);
 
-      const finalDest = result.role === "admin" 
-        ? "/admin" 
-        : result.role === "professor" 
-          ? "/teacher-space" 
+      const finalDest = result.role === "admin"
+        ? "/admin"
+        : result.role === "professor"
+          ? "/teacher-space"
           : "/student-space";
 
       toast.success(
@@ -52,11 +49,9 @@ function LoginPage() {
       navigate(finalDest);
     } catch (err: any) {
       const msg = err?.message || "Login failed";
-      // If backend is unreachable (network error), allow local demo login
       if (msg.includes("fetch") || msg.includes("Failed") || msg.includes("NetworkError") || msg.includes("Load failed")) {
-        // Save full session with correct role
         localStorage.setItem("user_id", id);
-        localStorage.setItem("user_name", id.startsWith("00") ? "Admin" : id.startsWith("1900") ? "Professeur" : "Étudiant");
+        localStorage.setItem("user_name", isAdmin ? "Admin" : isTeacher ? "Professeur" : "Étudiant");
         localStorage.setItem("user_role", role);
         localStorage.setItem("user_major", "Informatique");
         toast.warning(
@@ -66,7 +61,6 @@ function LoginPage() {
             ? "⚠️ Backend hors ligne — Accès enseignant en mode démo"
             : "⚠️ Backend hors ligne — Mode démo activé"
         );
-        // Navigate to correct space based on role — NEVER to /offline
         setTimeout(() => navigate(dest), 600);
       } else {
         toast.error(msg);
@@ -76,9 +70,22 @@ function LoginPage() {
     }
   };
 
+  const demoLogin = (role: "admin" | "professor" | "student") => {
+    const map = {
+      admin:     { id: "001",      name: "Admin",      major: "Administration", dest: "/admin" },
+      professor: { id: "19001",    name: "Professeur", major: "Informatique",   dest: "/teacher-space" },
+      student:   { id: "20231234", name: "Étudiant",   major: "Informatique",   dest: "/student-space" },
+    };
+    const info = map[role];
+    localStorage.setItem("user_id",    info.id);
+    localStorage.setItem("user_name",  info.name);
+    localStorage.setItem("user_role",  role);
+    localStorage.setItem("user_major", info.major);
+    navigate(info.dest);
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Ambient background */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
@@ -229,6 +236,39 @@ function LoginPage() {
 
             <div className="mt-4 text-center text-xs">
               <Link to="/" className="text-ink-3 hover:text-ink">{t("common.back_home" as any)}</Link>
+            </div>
+
+            {/* Demo Quick Access */}
+            <div className="mt-4 rounded-2xl border border-dashed border-surface-3 bg-surface-2/60 p-4">
+              <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-widest text-ink-3">
+                ⚡ Accès rapide démo
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => demoLogin("admin")}
+                  className="flex flex-col items-center gap-1 rounded-xl border border-surface-3 bg-white px-2 py-3 text-[11px] font-semibold text-ink shadow-sm transition hover:border-ink hover:bg-ink hover:text-white"
+                >
+                  <span className="text-lg">🛡️</span>
+                  Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => demoLogin("professor")}
+                  className="flex flex-col items-center gap-1 rounded-xl border border-surface-3 bg-white px-2 py-3 text-[11px] font-semibold text-ink shadow-sm transition hover:border-ink hover:bg-ink hover:text-white"
+                >
+                  <span className="text-lg">👨‍🏫</span>
+                  Enseignant
+                </button>
+                <button
+                  type="button"
+                  onClick={() => demoLogin("student")}
+                  className="flex flex-col items-center gap-1 rounded-xl border border-surface-3 bg-white px-2 py-3 text-[11px] font-semibold text-ink shadow-sm transition hover:border-ink hover:bg-ink hover:text-white"
+                >
+                  <span className="text-lg">🎓</span>
+                  Étudiant
+                </button>
+              </div>
             </div>
           </div>
         </div>
