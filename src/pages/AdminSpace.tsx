@@ -1,6 +1,6 @@
 import { useEffect, useState, Component, ReactNode } from "react";
 import { User, Menu, AlertTriangle } from "lucide-react";
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/Sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
