@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Chatbot } from "@/components/Chatbot";
-import ubmaLogo from "@/assets/ubma-logo.png";
+import { UBMA_LOGO as ubmaLogo } from "@/assets/images";
 
 
 const EN = "Welcome to the University Space of Badji Mokhtar Annaba";

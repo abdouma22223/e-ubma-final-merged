@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
-import ubmaLogo from "@/assets/ubma-logo.png";
+import { UBMA_LOGO as ubmaLogo } from "@/assets/images";
 
 
 import { supabase } from "../supabaseClient";
@@ -36,9 +36,9 @@ function LoginPage() {
             toast.success(`Welcome back ${data.first_name} (${data.role})`);
             
             // Redirect based on role
-            if (data.role === 'admin') navigate("/admin");
-            else if (data.role === 'professor') navigate("/professor");
-            else navigate("/student");
+            if (data.role === 'admin') navigate("/admin-dashboard");
+            else if (data.role === 'professor') navigate("/professor-dashboard");
+            else navigate("/student-space");
         }
     } catch (err) {
         console.error("Unexpected Error:", err);
