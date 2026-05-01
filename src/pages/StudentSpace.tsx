@@ -298,7 +298,7 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
         </div>
         <div className="ml-auto flex items-center gap-3">
           <button className="rounded-full border border-surface-3 px-4 py-1.5 text-[13px] font-medium text-ink-2 transition hover:border-ink hover:bg-surface-2">
-            Help
+            مساعدة
           </button>
           <button
             aria-label="Notifications"
@@ -335,15 +335,15 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
         <div className="fade-up">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-surface-3 bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-2">
             <span className="h-2 w-2 rounded-full bg-ink pulse-ring" />
-            {spaceLabel} · Academic Year 2024–2025
+            {spaceLabel} · السنة الجامعية 2024–2025
           </div>
           <h1 className="font-display text-[clamp(2.2rem,4vw,3.25rem)] font-extrabold leading-[1.05] tracking-tight text-ink">
-            Your academic<br />
-            documents,<br />
-            reimagined.
+            وثائقك الأكاديمية،<br />
+            برؤية<br />
+            جديدة.
           </h1>
           <p className="mt-5 max-w-[480px] text-base leading-relaxed text-ink-2">
-            Request, manage, and share certified documents, Open Badges, and e-signatures — all in one secure place built for GNU students.
+            اطلب، أدر وشارك الوثائق المصدقة، الشارات المفتوحة، والتواقيع الإلكترونية — كل ذلك في مكان واحد آمن مصمم لطلبة GNU.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
@@ -351,13 +351,13 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
               className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:opacity-90"
             >
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7" /></svg>
-              Request a document
+              طلب وثيقة
             </a>
             <a
               href="#vault"
               className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-surface-3 bg-white px-6 py-3 text-sm font-medium text-ink transition hover:border-ink"
             >
-              View my documents
+              عرض وثائقي
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
             </a>
           </div>
@@ -377,9 +377,9 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
             </div>
             <div className="flex flex-col gap-2.5">
               {[
-                { icon: "📄", title: "School Certificate 2024", label: "Pending", tone: "warning" as PillTone, animatedDots: true },
-                { icon: "🏅", title: "Data Structures Badge", label: "Issued", tone: "danger" as PillTone, animatedDots: false },
-                { icon: "🔐", title: "Transcript 2023–24", label: "Verified", tone: "info" as PillTone, animatedDots: false },
+                { icon: "📄", title: "شهادة مدرسية 2024", label: "قيد الانتظار", tone: "warning" as PillTone, animatedDots: true },
+                { icon: "🏅", title: "شارة هياكل البيانات", label: "صدرت", tone: "danger" as PillTone, animatedDots: false },
+                { icon: "🔐", title: "كشف نقاط 2023–24", label: "تم التحقق", tone: "info" as PillTone, animatedDots: false },
               ].map((d, i) => (
                 <div
                   key={d.title}
@@ -413,8 +413,8 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
       {/* E-SERVICES */}
       <section id="services" className="mx-auto max-w-[1200px] px-8 pb-12">
         <div className="mb-6 flex items-baseline justify-between">
-          <h2 className="font-display text-2xl font-bold tracking-tight text-ink">E-services</h2>
-          <a href="#" className="text-[13px] font-medium text-ink hover:underline">View all →</a>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-ink">الخدمات الإلكترونية</h2>
+          <a href="#" className="text-[13px] font-medium text-ink hover:underline">عرض الكل ←</a>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s, i) => (
@@ -438,14 +438,14 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
       {/* OPEN BADGES */}
       <section id="badges" className="mx-auto max-w-[1200px] px-8 pb-12">
         <div className="mb-6 flex items-baseline justify-between">
-          <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Open Badges</h2>
-          <a href="#" className="text-[13px] font-medium text-ink hover:underline">Verify all →</a>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-ink">الشارات المفتوحة</h2>
+          <a href="#" className="text-[13px] font-medium text-ink hover:underline">التحقق من الكل ←</a>
         </div>
         <div className="overflow-hidden rounded-xl border border-surface-3 bg-white">
           <table className="w-full text-sm">
             <thead>
               <tr>
-                {["Badge", "Issuer", "Date", "Standard", "Action"].map((h) => (
+                {["الشارة", "المصدر", "التاريخ", "المعيار", "الإجراء"].map((h) => (
                   <th key={h} className="border-b border-surface-3 bg-surface-2 px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-3">
                     {h}
                   </th>
@@ -472,13 +472,13 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
                   <td className="border-b border-surface-2 px-5 py-3.5">
                     <div className="flex items-center gap-2">
                       <button className="rounded-full border border-surface-3 px-3 py-1 text-xs font-medium text-ink-2 transition hover:border-ink hover:text-ink">
-                        Details
+                        التفاصيل
                       </button>
                       <button 
                         onClick={() => handleLinkedInShare(b)}
                         className="rounded-full border border-blue-500/30 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-100"
                       >
-                        LinkedIn
+                        لينكد إن
                       </button>
                     </div>
                   </td>
@@ -486,7 +486,7 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
               ))}
               {userBadges.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-ink-3">No badges found in your profile.</td>
+                  <td colSpan={5} className="py-8 text-center text-ink-3">لم يتم العثور على شارات في ملفك الشخصي.</td>
                 </tr>
               )}
             </tbody>
@@ -498,16 +498,16 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
       <section id="demarches" className="mx-auto max-w-[1200px] px-8 pb-12">
         <div className="mb-6 flex items-baseline justify-between">
           <div>
-            <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Mes démarches</h2>
-            <p className="mt-1 text-[13px] text-ink-3">Suivi temps réel · mis à jour il y a quelques secondes</p>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-ink">إجراءاتي</h2>
+            <p className="mt-1 text-[13px] text-ink-3">متابعة فورية · تم التحديث منذ ثوانٍ</p>
           </div>
-          <a href="#" className="text-[13px] font-medium text-ink hover:underline">Tout voir →</a>
+          <a href="#" className="text-[13px] font-medium text-ink hover:underline">عرض الكل ←</a>
         </div>
         <div className="overflow-hidden rounded-xl border border-surface-3 bg-white">
           <table className="w-full text-sm">
             <thead>
               <tr>
-                {["Référence", "Démarche", "Étape", "SLA", "Statut"].map((h) => (
+                {["المرجع", "الإجراء", "المرحلة", "SLA", "الحالة"].map((h) => (
                   <th key={h} className="border-b border-surface-3 bg-surface-2 px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-3">
                     {h}
                   </th>
@@ -523,11 +523,11 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
                   <td className="border-b border-surface-2 px-5 py-3.5 text-[13px] text-ink-3">{d.sla}</td>
                   <td className="border-b border-surface-2 px-5 py-3.5">
                     {d.status === "disponible" ? (
-                      <StatusPill tone="success" label="Disponible" />
+                      <StatusPill tone="success" label="متاح" />
                     ) : d.status === "encours" ? (
-                      <StatusPill tone="warning" label="En cours" />
+                      <StatusPill tone="warning" label="قيد الدراسة" />
                     ) : (
-                      <StatusPill tone="info" label="Coffre-fort" />
+                      <StatusPill tone="info" label="الخزنة" />
                     )}
                   </td>
                 </tr>
@@ -541,12 +541,12 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
       <section id="timeline" className="mx-auto max-w-[1200px] px-8 pb-12">
         <div className="mb-6 flex items-baseline justify-between">
           <div>
-            <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Frise — Dossier #GNU-421</h2>
-            <p className="mt-1 text-[13px] text-ink-3">Congé académique · suivi des étapes</p>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-ink">المسار الزمني — ملف #GNU-421</h2>
+            <p className="mt-1 text-[13px] text-ink-3">عطلة أكاديمية · متابعة الخطوات</p>
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning-light px-3 py-1 text-[11px] font-semibold text-warning">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
-            En cours
+            قيد الدراسة
           </span>
         </div>
         <div className="rounded-xl border border-surface-3 bg-white p-6 sm:p-8">
@@ -582,7 +582,7 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
                       <h3 className="font-display text-base font-bold text-ink">{s.title}</h3>
                       {s.state === "active" && (
                         <span className="inline-flex items-center rounded-full border border-warning/40 bg-warning-light px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning">
-                          Étape actuelle
+                          المرحلة الحالية
                         </span>
                       )}
                     </div>
@@ -593,7 +593,7 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
                         <span aria-hidden className="dot-anim inline-flex w-4 justify-between text-warning">
                           <span>•</span><span>•</span><span>•</span>
                         </span>
-                        Traitement en cours par le service N1
+                        المعالجة جارية من قبل المصلحة N1
                       </div>
                     )}
                   </div>
@@ -608,16 +608,16 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
       <section id="vault" className="mx-auto max-w-[1200px] px-8 pb-16">
         <div className="mb-6 flex items-baseline justify-between">
           <div>
-            <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Mon coffre-fort documentaire</h2>
-            <p className="mt-1 text-[13px] text-ink-3">Documents officiels signés · stockage chiffré</p>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-ink">خزنتي الوثائقية</h2>
+            <p className="mt-1 text-[13px] text-ink-3">وثائق رسمية موقعة · تخزين مشفر</p>
           </div>
           <div className="flex items-center gap-3">
             <label className={`inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
               <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
-              {uploading ? "Uploading..." : "Upload Document"}
+              {uploading ? "جاري الرفع..." : "رفع وثيقة"}
               <input type="file" className="hidden" onChange={handleUpload} disabled={uploading} />
             </label>
-            <a href="#" className="text-[13px] font-medium text-ink hover:underline">Tout télécharger →</a>
+            <a href="#" className="text-[13px] font-medium text-ink hover:underline">تحميل الكل ←</a>
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -655,7 +655,7 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
                   <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                   </svg>
-                  Download
+                  تحميل
                 </button>
                 <button 
                   onClick={() => handleShare(v.id)}
@@ -665,12 +665,12 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
                     <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
                     <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
                   </svg>
-                  Share
+                  مشاركة
                 </button>
                 <button 
                   onClick={() => handleVerifyQR(v)}
                   className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-3 bg-white transition hover:border-ink hover:text-ink"
-                  title="Verify QR"
+                  title="التحقق عبر QR"
                 >
                   <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z" /></svg>
                 </button>
@@ -692,13 +692,13 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
                 <div className="h-7 flex-1 animate-pulse rounded-full bg-surface-2" />
                 <div className="h-7 flex-1 animate-pulse rounded-full bg-surface-2" />
               </div>
-              <div className="mt-3 text-center text-[11px] font-medium text-ink-3">Synchronisation en cours…</div>
+              <div className="mt-3 text-center text-[11px] font-medium text-ink-3">جاري المزامنة…</div>
             </article>
           ))}
           
           {!loadingDocs && userDocs.length === 0 && (
             <div className="col-span-full py-12 text-center text-ink-3">
-              No documents found in your vault. Request one from E-services.
+              لم يتم العثور على وثائق في خزنتك. اطلب واحدة من الخدمات الإلكترونية.
             </div>
           )}
         </div>
@@ -706,7 +706,7 @@ function Index({ spaceLabel = "Student Space", mode = "student" }: { spaceLabel?
 
       {/* FOOTER */}
       <footer className="mt-8 border-t border-surface-3 px-8 py-8 text-center text-xs text-ink-3">
-        © 2025 GNU — Università degli Studi. All documents are PAdES-LTV signed and legally valid in the EU.
+        © 2025 GNU — جميع الوثائق موقعة بمعيار PAdES-LTV ومعترف بها قانوناً.
       </footer>
 
       <Chatbot onIntentDetected={handleIntentDetected} />
