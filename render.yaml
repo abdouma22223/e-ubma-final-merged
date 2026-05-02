@@ -15,10 +15,11 @@ services:
         sync: false # Set this in Render Dashboard manually
 
   # 2. Frontend Service (Static Site)
-  - type: static_site
+  - type: web
     name: e-ubma-frontend
+    runtime: static
     buildCommand: npm install && npm run build
-    publishPath: ./dist
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_BACKEND_URL
         fromService:
