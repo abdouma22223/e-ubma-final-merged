@@ -17,7 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/Sidebar";
-import ubmaLogo from "@/assets/ubma-logo.png";
+import ubmaLogo from "@/assets/ubma-logo";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 type Item = { id: string; titleKey: string; icon: typeof LayoutGrid };
@@ -38,6 +38,7 @@ const teacherItems: Item[] = [
   { id: "documents",  titleKey: "sidebar.documents",  icon: FileCheck2 },
   { id: "timeline",   titleKey: "sidebar.timeline",   icon: GitCommitVertical },
   { id: "courses",    titleKey: "sidebar.courses",    icon: BookOpen },
+  { id: "badges",     titleKey: "sidebar.openbadges", icon: Award },
   { id: "messaging",  titleKey: "sidebar.messaging",  icon: MessagesSquare },
 ];
 
@@ -121,7 +122,7 @@ export function AppSidebar() {
               <span className="truncate font-display text-sm font-bold text-ink">
                 {isTeacher ? "Dr. Karim Boudraa" : "Amine Amara"}
               </span>
-              <span className="truncate text-[11px] text-ink-3">
+              <span className="truncate text-[12px] text-ink-3">
                 {isTeacher ? "Faculty of Informatics" : "Computer Science · Y2"}
               </span>
             </div>
