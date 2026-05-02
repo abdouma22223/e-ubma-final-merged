@@ -19,8 +19,8 @@ app.add_middleware(
 )
 
 class LoginRequest(BaseModel):
-    email: string
-    password: string
+    email: str
+    password: str
 
 @app.post("/api/login")
 async def login(req: LoginRequest):
