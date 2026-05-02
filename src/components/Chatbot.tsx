@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiChat } from "@/lib/api";
 
-type Msg = { role: "bot" | "user"; html: string };
+type Msg = { 
+  role: "bot" | "user"; 
+  html: string; 
+  action?: { label: string; link: string };
+};
 
 // Localized suggestion prompts
 const SUGGESTIONS_BY_LANG: Record<string, string[]> = {
@@ -27,9 +31,9 @@ const SUGGESTIONS_BY_LANG: Record<string, string[]> = {
 };
 
 const WELCOME_BY_LANG: Record<string, string> = {
-  ar: "مرحباً، أنا <strong>مساعد GNU الذكي</strong>، مساعدك الأكاديمي في جامعة باجي مختار. كيف يمكنني مساعدتك اليوم؟",
-  fr: "Bonjour, je suis <strong>GNU Assistant</strong>, votre guide IA pour les documents, badges et e-services. Comment puis-je vous aider?",
-  en: "Hi, I'm <strong>GNU Assistant</strong>, your AI guide for documents, badges and e-services. How can I help today?",
+  ar: "مرحباً، أنا <strong>مساعد GNU الذكي</strong>، مساعدك الأكاديمي في جامعة باجي مختار.<br/><br/>كيف يمكنني مساعدتك اليوم؟",
+  fr: "Bonjour, je suis <strong>GNU Assistant</strong>، votre guide IA pour les documents, badges et e-services.<br/><br/>Comment puis-je vous aider ?",
+  en: "Hi, I'm <strong>GNU Assistant</strong>, your AI guide for documents, badges and e-services.<br/><br/>How can I help today?",
 };
 
 // Fallback hardcoded responses when backend is offline
@@ -44,6 +48,20 @@ const OFFLINE_RESPONSES: Record<string, string> = {
     "Every document in your <strong>Digital Vault</strong> carries a unique QR code. Scan it with any phone — it opens a public verification page showing the issuer, date, and signature status in real time.",
 };
 
+const NAV_LABEL: Record<string, string> = {
+  ar: "انتقل الآن ↗",
+  fr: "Y aller ↗",
+  en: "Go now ↗",
+};
+
+const DEST_NAMES: Record<string, Record<string, string>> = {
+  vault: { ar: "الخزنة الرقمية", fr: "Coffre-fort", en: "Digital Vault" },
+  badges: { ar: "الشارات المفتوحة", fr: "Open Badges", en: "Open Badges" },
+  eservices: { ar: "الخدمات الإلكترونية", fr: "E-services", en: "E-services" },
+  home: { ar: "الرئيسية", fr: "Accueil", en: "Home" },
+};
+
+
 type ChatbotProps = {
   defaultOpen?: boolean;
   inline?: boolean;
@@ -56,14 +74,24 @@ export function Chatbot({ defaultOpen = false, inline = false, onAction }: Chatb
   const langRef = useRef(lang);
 
   const [open, setOpen] = useState(defaultOpen || inline);
-  const [msgs, setMsgs] = useState<Msg[]>([
-    { role: "bot", html: WELCOME_BY_LANG[lang] ?? WELCOME_BY_LANG["fr"] },
-  ]);
+  const [msgs, setMsgs] = useState<Msg[]>(() => {
+    // Show welcome only if not seen before OR if inline
+    const hasSeenWelcome = localStorage.getItem("ubma_welcome_seen");
+    if (hasSeenWelcome && !inline) return [];
+    return [{ role: "bot", html: WELCOME_BY_LANG[lang] ?? WELCOME_BY_LANG["fr"] }];
+  });
   const [typing, setTyping] = useState(false);
   const [input, setInput] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Mark as seen when opened
+  useEffect(() => {
+    if (open) {
+      localStorage.setItem("ubma_welcome_seen", "true");
+    }
+  }, [open]);
 
   // Only reset welcome if language changes AND no user messages yet
   useEffect(() => {
@@ -71,7 +99,7 @@ export function Chatbot({ defaultOpen = false, inline = false, onAction }: Chatb
       langRef.current = lang;
       setMsgs((prev) => {
         const hasUserMessages = prev.some((m) => m.role === "user");
-        if (!hasUserMessages) {
+        if (!hasUserMessages && prev.length > 0) {
           setShowSuggestions(true);
           return [{ role: "bot", html: WELCOME_BY_LANG[lang] ?? WELCOME_BY_LANG["fr"] }];
         }
@@ -121,7 +149,7 @@ export function Chatbot({ defaultOpen = false, inline = false, onAction }: Chatb
         if (intentData.intent === "navigate") {
           const dest = intentData.destination;
           const currentRole = localStorage.getItem("user_role") || "student";
-          const baseRoute = currentRole === "admin" ? "/admin-space" : currentRole === "professor" ? "/teacher-space" : "/student-space";
+          const baseRoute = currentRole === "admin" ? "/admin" : currentRole === "professor" ? "/teacher-space" : "/student-space";
           
           const routeMap: Record<string, string> = {
             vault: baseRoute,
@@ -129,8 +157,23 @@ export function Chatbot({ defaultOpen = false, inline = false, onAction }: Chatb
             badges: baseRoute,
             eservices: baseRoute,
           };
+
           if (dest && routeMap[dest]) {
-            setTimeout(() => { window.location.href = routeMap[dest]; }, 1500);
+            const destName = DEST_NAMES[dest]?.[lang] || dest;
+            const navMsg = lang === "ar" 
+              ? `هل تريد الانتقال إلى <strong>${destName}</strong>؟`
+              : lang === "fr"
+                ? `Voulez-vous aller vers <strong>${destName}</strong> ?`
+                : `Would like to go to <strong>${destName}</strong>?`;
+            
+            setMsgs((m) => [
+              ...m, 
+              { 
+                role: "bot", 
+                html: navMsg,
+                action: { label: NAV_LABEL[lang] ?? NAV_LABEL["en"], link: routeMap[dest] }
+              }
+            ]);
           }
         } else if (intentData.intent === "request_document" || intentData.intent === "fill_form") {
           if (onAction) {
@@ -143,10 +186,10 @@ export function Chatbot({ defaultOpen = false, inline = false, onAction }: Chatb
       // Offline fallback — try hardcoded responses
       const offlineReply = OFFLINE_RESPONSES[t] ||
         (lang === "ar"
-          ? "عذراً، الخادم غير متاح حالياً. تأكد من تشغيل الـ Backend على المنفذ 8001."
+          ? "عذراً، الخادم غير متاح حالياً. تأكد من تشغيل الـ Backend على المنفذ 8000."
           : lang === "fr"
-            ? "Désolé, le serveur IA est indisponible. Vérifiez que le Backend tourne sur le port 8001."
-            : "Sorry, the AI server is unreachable. Make sure the Backend is running on port 8001.");
+            ? "Désolé, le serveur IA est indisponible. Vérifiez que le Backend tourne sur le port 8000."
+            : "Sorry, the AI server is unreachable. Make sure the Backend is running on port 8000.");
       setMsgs((m) => [...m, { role: "bot", html: offlineReply }]);
     }
   };
@@ -206,9 +249,20 @@ export function Chatbot({ defaultOpen = false, inline = false, onAction }: Chatb
           {msgs.map((m, i) => (
             <div key={i} className={`flex max-w-[88%] flex-col gap-1 ${m.role === "user" ? "self-end items-end" : "self-start items-start"} fade-up`} style={{ animationDuration: ".35s" }}>
               <div
-                className={`px-3.5 py-2.5 text-[13.5px] leading-snug rounded-2xl ${m.role === "user" ? "bg-ink text-white rounded-br-sm" : "bg-white border border-surface-3 text-ink rounded-bl-sm"}`}
-                dangerouslySetInnerHTML={{ __html: m.html }}
-              />
+                className={`px-3.5 py-2.5 text-[13.5px] leading-snug rounded-2xl ${m.role === "user" ? "bg-ink text-white rounded-br-sm" : "bg-white border border-surface-3 text-ink rounded-bl-sm shadow-sm"}`}
+              >
+                <div dangerouslySetInnerHTML={{ __html: m.html }} />
+                {m.action && (
+                  <button
+                    onClick={() => {
+                      window.location.href = m.action!.link;
+                    }}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-ink py-2.5 text-xs font-bold text-white transition-all hover:bg-ink/90 active:scale-95"
+                  >
+                    {m.action.label}
+                  </button>
+                )}
+              </div>
             </div>
           ))}
           {typing && (
