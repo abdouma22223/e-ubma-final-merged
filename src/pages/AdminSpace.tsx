@@ -4,7 +4,8 @@ import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/Sid
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
-import ubmaLogo from "@/assets/ubma-logo.png";
+import ubmaLogo from "@/assets/ubma-logo";
+import { useNavigate } from "react-router-dom";
 
 import { StatsOverview } from "@/components/admin/StatsOverview";
 import { UserManagement } from "@/components/admin/UserManagement";
@@ -16,7 +17,6 @@ import { ActivityLog } from "@/components/admin/ActivityLog";
 import { AdminMessaging } from "@/components/admin/AdminMessaging";
 import { AdminRequestsBell } from "@/components/admin/AdminRequestsBell";
 
-// --- Safety Guard to prevent White Screen ---
 class SafetyGuard extends Component<{children: ReactNode, name: string}, {hasError: boolean}> {
   constructor(props: any) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError() { return { hasError: true }; }
@@ -43,8 +43,6 @@ const sectionLinks = [
   { id: "documents", labelKey: "admin.nav.documents" },
   { id: "activity",  labelKey: "admin.nav.activity" },
 ];
-
-import { useNavigate } from "react-router-dom";
 
 function AdminTopNav() {
   const { toggleSidebar } = useSidebar();
@@ -87,7 +85,6 @@ function AdminTopNav() {
     </nav>
   );
 }
-
 
 export default function AdminSpace() {
   const { t, dir, lang } = useLanguage();
