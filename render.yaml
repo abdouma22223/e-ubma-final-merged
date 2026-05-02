@@ -15,9 +15,9 @@ services:
         sync: false # Set this in Render Dashboard manually
 
   # 2. Frontend Service (Static Site)
-  - type: static
+  - type: web
     name: e-ubma-frontend
-    env: node
+    env: static
     buildCommand: npm install && npm run build
     publishPath: ./dist
     envVars:
