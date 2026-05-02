@@ -1,13 +1,12 @@
 /**
  * API Service Layer — connects to the BIG FastAPI backend.
  */
-const BASE = "/api";
+const BASE = (import.meta.env.VITE_API_URL || "http://localhost:8001") + "/api";
 
 async function apiFetch(endpoint: string, options: RequestInit = {}) {
   return fetch(`${BASE}${endpoint}`, options);
 }
 
-// ─── Auth ───────────────────────────────────────────────
 export async function apiLogin(email: string, password: string) {
   const res = await apiFetch("/login", {
     method: "POST",
@@ -30,7 +29,6 @@ export async function apiRegister(data: any) {
   return res.json();
 }
 
-// ─── Chat (Groq AI) ────────────────────────────────────
 export async function apiChat(message: string, userId: string = "anonymous", context?: any) {
   const res = await apiFetch("/chat", {
     method: "POST",
@@ -41,7 +39,6 @@ export async function apiChat(message: string, userId: string = "anonymous", con
   return res.json();
 }
 
-// ─── Documents ──────────────────────────────────────────
 export async function apiGetDocuments(userId: string) {
   const res = await apiFetch(`/documents?user_id=${userId}`);
   if (!res.ok) throw new Error("Failed to fetch documents");
@@ -74,9 +71,25 @@ export async function apiDownloadDocument(docId: string, userId: string): Promis
   return res.blob();
 }
 
-export async function apiShareDocument(docId: string, expiresIn = 24) {
-  const res = await apiFetch(`/documents/share/${docId}?expires_in=${expiresIn}`);
-  if (!res.ok) throw new Error("Share link generation failed");
+export async function apiCreateShareLink(fileId: string, durationHours: number | null, customExpiry: string | null, usageType: string) {
+  const res = await apiFetch("/documents/share", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ file_id: fileId, duration_hours: durationHours, custom_expiry: customExpiry, usage_type: usageType }),
+  });
+  if (!res.ok) throw new Error("Share link creation failed");
+  return res.json();
+}
+
+export async function apiGetShareStatus(token: string) {
+  const res = await apiFetch(`/documents/share/status/${token}`);
+  if (!res.ok) throw new Error("Failed to fetch share status");
+  return res.json();
+}
+
+export async function apiRevokeShareLink(token: string) {
+  const res = await apiFetch(`/documents/share/${token}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to revoke link");
   return res.json();
 }
 
@@ -86,10 +99,9 @@ export async function apiVerifyDocument(fileHash: string) {
   return res.json();
 }
 
-// ─── Requests ───────────────────────────────────────────
 export async function apiGetRequests(userId: string, role: string) {
   const res = await apiFetch(`/requests?user_id=${userId}&role=${role}`);
-  if (!ok) throw new Error("Failed to fetch requests");
+  if (!res.ok) throw new Error("Failed to fetch requests");
   return res.json();
 }
 
@@ -111,7 +123,6 @@ export async function apiUpdateRequest(reqId: string, data: any) {
   return res.json();
 }
 
-// ─── Courses & Grades ────────────────────────────────────
 export async function apiGetCourses(professorId?: string) {
   const endpoint = professorId ? `/courses?professor_id=${professorId}` : "/courses";
   const res = await apiFetch(endpoint);
@@ -142,7 +153,6 @@ export async function apiCreateGrade(data: any) {
   return res.json();
 }
 
-// ─── Admin ───────────────────────────────────────────────
 export async function apiAdminGetUsers() {
   const res = await apiFetch("/admin/users");
   return res.json();
