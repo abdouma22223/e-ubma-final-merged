@@ -1,186 +1,91 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import {
-  LayoutGrid, Award, ListChecks, GitCommitVertical, ShieldCheck, LogOut,
-  Inbox, GraduationCap, Users, FileCheck2, MessagesSquare, BookOpen,
+  LayoutGrid,
+  FileText,
+  MessageSquare,
+  Bell,
+  Settings,
+  HelpCircle,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  GraduationCap
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/Sidebar";
-import ubmaLogo from "@/assets/ubma-logo.png";
+} from "@/components/ui/sidebar";
+import { UBMA_LOGO as ubmaLogo } from "@/assets/images";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-type Item = { id: string; titleKey: string; icon: typeof LayoutGrid };
+type Item = { id: string; titleKey: string; icon: typeof LayoutGrid; url: string };
 
-const studentItems: Item[] = [
-  { id: "services",  titleKey: "sidebar.eservices",  icon: LayoutGrid },
-  { id: "badges",    titleKey: "sidebar.openbadges", icon: Award },
-  { id: "demarches", titleKey: "sidebar.demarches",  icon: ListChecks },
-  { id: "timeline",  titleKey: "sidebar.timeline",   icon: GitCommitVertical },
-  { id: "vault",     titleKey: "sidebar.vault",      icon: ShieldCheck },
-  { id: "messaging", titleKey: "sidebar.messaging",  icon: MessagesSquare },
-  { id: "profile",   titleKey: "User Directory",     icon: Users },
+const items: Item[] = [
+  { id: "dashboard", titleKey: "studentSpace", icon: LayoutGrid, url: "/student-space" },
+  { id: "documents", titleKey: "digitalVault", icon: FileText, url: "/vault" },
+  { id: "messages", titleKey: "messages", icon: MessageSquare, url: "/messages" },
+  { id: "notifications", titleKey: "notifications", icon: Bell, url: "/notifications" },
+  { id: "settings", titleKey: "settings", icon: Settings, url: "/settings" },
 ];
-
-const teacherItems: Item[] = [
-  { id: "requests",   titleKey: "sidebar.requests",   icon: Inbox },
-  { id: "grades",     titleKey: "sidebar.grades",     icon: GraduationCap },
-  { id: "monitoring", titleKey: "sidebar.monitoring", icon: Users },
-  { id: "documents",  titleKey: "sidebar.documents",  icon: FileCheck2 },
-  { id: "timeline",   titleKey: "sidebar.timeline",   icon: GitCommitVertical },
-  { id: "courses",    titleKey: "sidebar.courses",    icon: BookOpen },
-  { id: "messaging",  titleKey: "sidebar.messaging",  icon: MessagesSquare },
-  { id: "profile",    titleKey: "User Directory",     icon: Users },
-];
-
-function scrollToSection(id: string) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const top = el.getBoundingClientRect().top + window.scrollY - 16;
-  window.scrollTo({ top, behavior: "smooth" });
-  // brief highlight pulse
-  el.classList.add("section-flash");
-  window.setTimeout(() => el.classList.remove("section-flash"), 900);
-}
 
 export function AppSidebar() {
-  const { state, isMobile, setOpenMobile } = useSidebar();
-  const { t, dir } = useLanguage();
-  const collapsed = state === "collapsed";
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isTeacher = location.pathname === "/teacher-space";
-  const items = useMemo(() => (isTeacher ? teacherItems : studentItems), [isTeacher]);
-  const homePath = isTeacher ? "/teacher-space" : "/student-space";
-  const [active, setActive] = useState<string>(items[0]?.id ?? "");
-
-  useEffect(() => {
-    setActive(items[0]?.id ?? "");
-  }, [items]);
-
-  useEffect(() => {
-    const els = items
-      .map((i) => document.getElementById(i.id))
-      .filter((e): e is HTMLElement => !!e);
-    if (!els.length) return;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActive(visible.target.id);
-      },
-      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
-    );
-    els.forEach((e) => obs.observe(e));
-    return () => obs.disconnect();
-  }, [items, location.pathname]);
-
-  const handleClick = (id: string) => {
-    if (id === "profile") {
-      navigate("/profile");
-      if (isMobile) setOpenMobile(false);
-      return;
-    }
-    
-    // Notify space pages to switch view (messaging is hidden by default)
-    window.dispatchEvent(new CustomEvent("space:nav", { detail: { id } }));
-
-    // If we're on the home page, scroll. Allow conditional sections to mount first.
-    if (location.pathname !== homePath) {
-      navigate(homePath);
-      window.setTimeout(() => scrollToSection(id), 250);
-    } else {
-      window.setTimeout(() => scrollToSection(id), 50);
-    }
-    if (isMobile) setOpenMobile(false);
-  };
+  const { state, toggleSidebar } = useSidebar();
+  const { t } = useLanguage();
 
   return (
-    <Sidebar collapsible="offcanvas" side={dir === "rtl" ? "right" : "left"} aria-label="Dashboard sections">
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2.5 px-1.5 py-1">
-          <img
-            src={ubmaLogo}
-            alt="UBMA logo"
-            className="h-9 w-9 shrink-0 rounded-lg bg-white object-contain p-1"
-          />
-          {!collapsed && (
-            <div className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate font-display text-sm font-bold text-ink">
-                {isTeacher ? "Dr. Karim Boudraa" : "Amine Amara"}
-              </span>
-              <span className="truncate text-[11px] text-ink-3">
-                {isTeacher ? "Faculty of Informatics" : "Computer Science · Y2"}
-              </span>
-            </div>
-          )}
-        </div>
-      </SidebarHeader>
-
+    <Sidebar collapsible="icon" className="border-r border-surface-3 bg-white">
       <SidebarContent>
+        <div className="flex h-16 items-center px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-white shadow-lg shadow-ink/20">
+              <img src={ubmaLogo} alt="Logo" className="h-7 w-7 rounded-full" />
+            </div>
+            {state !== "collapsed" && (
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-ink">E-UBMA</span>
+                <span className="text-[10px] font-medium text-ink-3">Digital Campus</span>
+              </div>
+            )}
+          </div>
+        </div>
+
         <SidebarGroup>
-          <SidebarGroupLabel>
-            {isTeacher ? t("sidebar.teacher_dashboard" as any) : t("sidebar.dashboard_sections" as any)}
+          <SidebarGroupLabel className="px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-3">
+            {t('mainMenu')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item, idx) => {
-                const isActive = active === item.id;
-                const title = t(item.titleKey as any);
-                return (
-                  <SidebarMenuItem
-                    key={item.id}
-                    className="animate-fade-in"
-                    style={{
-                      animationDelay: `${idx * 50}ms`,
-                      animationFillMode: "backwards",
-                    }}
-                  >
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      tooltip={title}
-                      onClick={() => handleClick(item.id)}
-                      aria-current={isActive ? "location" : undefined}
-                      aria-label={title}
-                      className="transition-all duration-200 ease-out hover:translate-x-1 hover:bg-sidebar-accent/70 active:scale-[0.98]"
-                    >
-                      <item.icon className="h-4 w-4" aria-hidden />
-                      <span>{title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {items.map((item) => (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton asChild tooltip={t(item.titleKey)}>
+                    <a href={item.url} className="flex items-center gap-3 rounded-xl px-4 py-2 text-ink-2 transition-all hover:bg-surface-2 hover:text-ink">
+                      <item.icon className="h-5 w-5" />
+                      <span>{t(item.titleKey)}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="border-t border-sidebar-border">
+      <div className="mt-auto border-t border-surface-3 p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip={t("common.logout" as any)}
-              aria-label={t("common.logout" as any)}
-              onClick={() => navigate("/login")}
-              className="text-danger hover:bg-danger-light hover:text-danger focus-visible:ring-danger"
-            >
-              <LogOut className="h-4 w-4" aria-hidden />
-              <span>{t("common.logout" as any)}</span>
+            <SidebarMenuButton className="w-full text-red-500 hover:bg-red-50 hover:text-red-600">
+              <LogOut className="h-5 w-5" />
+              <span>{t('signOut')}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-      </SidebarFooter>
+      </div>
     </Sidebar>
   );
 }
